@@ -28,7 +28,8 @@
 #include "QDebug"
 #include <QtGui/QApplication>
 #define LEN 9000
-#define LENGTH_OF_OFDM 14404
+#define LENGTH_OF_OFDM 15000
+
 //#define TEST_SOCKET
 #include "ui_qpsk.h"
 socklen_t size_chl2;
@@ -225,20 +226,20 @@ struct pilotid{
 };
 
 void QPSK3::timerEvent(QTimerEvent *event){
-    char buff[14404*3+10];
+    char buff[LENGTH_OF_OFDM*3+10];
     struct pilotid pilot2[1200];
     for( int i = 0 ; i < 200 ; i++ ){
         pilot2[i].id = i;
         pilot2[i].value = 0;
     }
 
-    recvfrom(sockser_chl1,&buff,14404*3+10,0,(struct sockaddr *)&addrrcv_chl1,(socklen_t*)&size_chl2);//port :7005.3
+    recvfrom(sockser_chl1,&buff,LENGTH_OF_OFDM*3+10,0,(struct sockaddr *)&addrrcv_chl1,(socklen_t*)&size_chl2);//port :7005.3
 
 
     //qDebug() << "Counter is " << cnt++ << endl;
-    /*
+
     qDebug() << buff << endl;
-*/
+
     // inverse
     for( int i = 0 ; i < 2405 ; i ++){
        int position = i * 6;
