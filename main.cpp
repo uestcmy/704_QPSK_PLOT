@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
 */
 
     QPSK3 w3;
-    w3.resize(600,450);
+    w3.setGeometry(600,500,400,400);
+    //w3.resize(600,450);
     w3.show();
     w3.setWindowTitle("QPSK Star ( Port:7005)");
 

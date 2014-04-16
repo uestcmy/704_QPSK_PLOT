@@ -28,10 +28,10 @@
 #include "QDebug"
 #include <QtGui/QApplication>
 #define LEN 9000
-#define LENGTH_OF_OFDM 15000
-
+#define LENGTH_OF_OFDM 6144
+#define operation
 //#define TEST_SOCKET
-#include "ui_qpsk.h"
+
 socklen_t size_chl2;
 int cnt = 0;
 sockaddr_in addrSrv_chl1,addrrcv_chl1;
@@ -236,9 +236,11 @@ void QPSK3::timerEvent(QTimerEvent *event){
     recvfrom(sockser_chl1,&buff,LENGTH_OF_OFDM*3+10,0,(struct sockaddr *)&addrrcv_chl1,(socklen_t*)&size_chl2);//port :7005.3
 
 
-    //qDebug() << "Counter is " << cnt++ << endl;
+    qDebug() << "Counter is " << cnt++ << endl;
 
-    qDebug() << buff << endl;
+   qDebug() << buff << endl;
+
+#ifdef operation
 
     // inverse
     for( int i = 0 ; i < 2405 ; i ++){
@@ -389,7 +391,7 @@ void QPSK3::timerEvent(QTimerEvent *event){
     // qDebug() << "  H : ---- ";
     int cntg = 0;
     double guess[1000][2] = {0};
-    for( int i = 0 ; i < 1200 ; i++){
+    for( int i = 0 ; i < 600 ; i++){
         if(i%6 != 0){
             // qDebug() << "  H :  "<<absH11_6[i][0];
             guess[cntg][0] = (data1[i][0]*absH11_6[i][0]+data1[i][1]*absH11_6[i][1])/(absH11_6[i][0]*absH11_6[i][0]+absH11_6[i][1]*absH11_6[i][1]);
@@ -400,6 +402,11 @@ void QPSK3::timerEvent(QTimerEvent *event){
             cntg++;
         }//if
     }//for
+
+    for( int i = 600 ; i < 1200 ; i++ ){
+        guess[i][0] = guess[i-600][0];
+        guess[i][1] = guess[i-600][1];
+    }
     pdata = &guess[0][0];
 
 /*
@@ -418,6 +425,7 @@ void QPSK3::timerEvent(QTimerEvent *event){
 
     updateGL();
     //qDebug()<< "timer event in mygl2 Class!" << endl;
+ #endif
 
 }
 
@@ -648,13 +656,14 @@ double QPSK3::char2int(char *str){
 }
 void QPSK3::myDrawStars(){
 
-    for( int i = 0 ; i < 500 ; i++ ){
+    for( int i = 0 ; i < 1000 ; i++ ){
         double z = (*(pdata+i*2+0));
         double y = *(pdata+i*2+1);
 
 
         //qDebug()<< "in my DrawStars, x ,y is " << z<<" , "<<y<<endl;
-        myDrawPoint(-0.2,y+0.5,z*2,0.01);
+        myDrawPoint(-0.2,y+0.5,z*2,0.02);
+
     }
 
 
