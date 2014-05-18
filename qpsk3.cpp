@@ -4,7 +4,7 @@
 
 
 
-#include <qpsk.h>
+
 #include <math.h>
 #include <QDebug>
 #include <stdio.h>
@@ -43,6 +43,8 @@ double data1[1800][2] = {0};//complex number real and image
 double data2[1800][2] = {0};
 int err = 0;
 int bit_cnt = 0;
+int cnt_line = 0;
+FILE *fp1 = fopen("qpdk_data_re.txt","w");
 QPSK3::QPSK3(QWidget *parent) :
     QGLWidget(parent),
     ui(new Ui::QPSK3)
@@ -238,7 +240,7 @@ void QPSK3::timerEvent(QTimerEvent *event){
 
     qDebug() << "Counter is " << cnt++ << endl;
 
-   qDebug() << buff << endl;
+//   qDebug() << buff << endl;
 
 #ifdef operation
 
@@ -272,142 +274,8 @@ void QPSK3::timerEvent(QTimerEvent *event){
         //qDebug() << data1[i][0] << data1[i][1] <<data2[i][0] <<data2[i][1] <<endl;
     }//for i
 
-    double pilotH11[200][2] = {0};
-    int cntH11 = 0;
-    for( int i = 0 ; i < 1200 ; i++){
-        if(i % 6 == 0){//position for the pilot H11
-            pilotH11[cntH11][0] = data1[i][0];
-            pilotH11[cntH11][1] = data1[i][1];
-            pilot2[cntH11].value = sqrt(data1[i][0]*data1[i][0]+data1[i][1]*data1[i][1]);
-            cntH11 += 1;
-        }//if
-    }
-    for( int i = 0 ; i < 200 ; i++){
-        for( int j = i+1 ; j < 200 ; j++){
-            if( pilot2[i].value - pilot2[j].value  < 1e-7 ){
-                struct pilotid  tmp = pilot2[i];
-                pilot2[i] = pilot2[j];
-                pilot2[j] = tmp;
-            }
-        }
-    }
-    /*commented by hh
-    for( int i = 0 ; i < 100 ; i++ ){
-        pilotH11[pilot2[i+100].id ][0] = pilotH11[pilot2[i].id][0];
-        pilotH11[pilot2[i+100].id ][1] = pilotH11[pilot2[i].id][1];
-        pilot[pilot2[i+100].id][0] = pilot[pilot2[i].id][0];
-        pilot[pilot2[i+100].id][1] = pilot[pilot2[i].id][1];
 
-        data1[pilot2[i+100].id*6][0] = data1[pilot2[i].id*6][0];
-        data1[pilot2[i+100].id*6][1] = data1[pilot2[i].id*6][1];
-
-        data1[pilot2[i+100].id*6+1][0] = data1[pilot2[i].id*6+1][0];
-        data1[pilot2[i+100].id*6+1][1] = data1[pilot2[i].id*6+1][1];
-
-        data1[pilot2[i+100].id*6+2][0] = data1[pilot2[i].id*6+2][0];
-        data1[pilot2[i+100].id*6+2][1] = data1[pilot2[i].id*6+2][1];
-
-        data1[pilot2[i+100].id*6+3][0] = data1[pilot2[i].id*6+3][0];
-        data1[pilot2[i+100].id*6+3][1] = data1[pilot2[i].id*6+3][1];
-
-        data1[pilot2[i+100].id*6+4][0] = data1[pilot2[i].id*6+4][0];
-        data1[pilot2[i+100].id*6+4][1] = data1[pilot2[i].id*6+4][1];
-
-        data1[pilot2[i+100].id*6+5][0] = data1[pilot2[i].id*6+5][0];
-        data1[pilot2[i+100].id*6+5][1] = data1[pilot2[i].id*6+5][1];
-
-    }
-    */
-
-/*
-    for( int i = 0 ; i < 200 ; i++ ){
-        qDebug() << pilot2[i].value << pilot2[i].id ;
-    }
-*/
-    double H11[200][2] = {0};
-    double absH11[200] = {0};
-    double absH11_6[1200][2] = {0};
-
-
-    //qDebug() << "  ----  ";
-    for( int i = 0 ; i < 200 ; i++ ){
-
-        H11[i][0] = (pilotH11[i][0]*pilot[i*6][0]+pilotH11[i][1]*pilot[i*6][1])/(pilot[i*6][0]*pilot[i*6][0]+pilot[i*6][1]*pilot[i*6][1]);
-        H11[i][1] = (pilotH11[i][1]*pilot[i*6][0]-pilotH11[i][0]*pilot[i*6][1])/(pilot[i*6][0]*pilot[i*6][0]+pilot[i*6][1]*pilot[i*6][1]);
-        //qDebug() << H11[i][0] << H11[i][1]  << "  angle :  "<<atan(H11[i][1]/H11[i][0])<<"pilot"<<pilot[i*6][0]<<"|"<<pilot[i*6][1];
-
-        //qDebug() << "  angle :  "<<atan(H11[i][1]/H11[i][0]);
-        absH11[i] = sqrt(H11[i][0]*H11[i][0] + H11[i][1]*H11[i][1]);
-
-    }//for i
-
-    //interp :edited by hh
-    for(int i=0;i<200;i++){
-        absH11_6[i*6][0] =  H11[i][0];
-        absH11_6[i*6 + 1 ][0] =  H11[i][0];
-        absH11_6[i*6 + 2 ][0] =  H11[i][0];
-        absH11_6[i*6 + 3][0]=  H11[i][0];
-        absH11_6[i*6 + 4 ][0] =  H11[i][0];
-        absH11_6[i*6 + 5 ][0] =  H11[i][0];
-
-        absH11_6[i*6][1] =  H11[i][1];
-        absH11_6[i*6 + 1 ][1] =  H11[i][1];
-        absH11_6[i*6 + 2 ][1] =  H11[i][1];
-        absH11_6[i*6 + 3][1]=  H11[i][1];
-        absH11_6[i*6 + 4 ][1] =  H11[i][1];
-        absH11_6[i*6 + 5 ][1] =  H11[i][1];
-        absH11_6[i*6 + 6 ][1] =  H11[i][1];
-
-        /*
-        absH11_6[i*12][0] =  H11[2*i][0];
-        absH11_6[i*12 + 1 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 2 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 3][0]=  H11[2*i][0];
-        absH11_6[i*12 + 4 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 5 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 6 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 7 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 8][0]=  H11[2*i][0];
-        absH11_6[i*12 + 9 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 10 ][0] =  H11[2*i][0];
-        absH11_6[i*12 + 11 ][0] =  H11[2*i][0];
-
-        absH11_6[i*12][1] =  H11[2*i][1];
-        absH11_6[i*12 + 1 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 2 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 3][1]=  H11[2*i][1];
-        absH11_6[i*12 + 4 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 5 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 6 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 7 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 8][1]=  H11[2*i][1];
-        absH11_6[i*12 + 9 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 10 ][1] =  H11[2*i][1];
-        absH11_6[i*12 + 11 ][1] =  H11[2*i][1];
-        */
-    }
-
-
-    // qDebug() << "  H : ---- ";
-    int cntg = 0;
-    double guess[1000][2] = {0};
-    for( int i = 0 ; i < 600 ; i++){
-        if(i%6 != 0){
-            // qDebug() << "  H :  "<<absH11_6[i][0];
-            guess[cntg][0] = (data1[i][0]*absH11_6[i][0]+data1[i][1]*absH11_6[i][1])/(absH11_6[i][0]*absH11_6[i][0]+absH11_6[i][1]*absH11_6[i][1]);
-            //guess[cntg][0] /= 15000;
-
-            guess[cntg][1] = (data1[i][1]*absH11_6[i][0]-data1[i][0]*absH11_6[i][1])/(absH11_6[i][0]*absH11_6[i][0]+absH11_6[i][1]*absH11_6[i][1]);
-            //guess[cntg][1]  /= 15000;
-            cntg++;
-        }//if
-    }//for
-
-    for( int i = 600 ; i < 1200 ; i++ ){
-        guess[i][0] = guess[i-600][0];
-        guess[i][1] = guess[i-600][1];
-    }
-    pdata = &guess[0][0];
+    pdata = &data1[0][0];
 
 /*
     if(first1 == 1){
@@ -656,14 +524,27 @@ double QPSK3::char2int(char *str){
 }
 void QPSK3::myDrawStars(){
 
-    for( int i = 0 ; i < 1000 ; i++ ){
-        double z = (*(pdata+i*2+0));
-        double y = *(pdata+i*2+1);
 
-
+    for( int i = 0 ; i < 300 ; i++ ){
+        double z = (*(pdata+i*2+0))/1e4;
+        double y = *(pdata+i*2+1)/1e4;
+        if( cnt_line <= 100   ){
+            if( z > 0 ){
+                fprintf(fp1,"+");
+             }else if( z < 0   ){
+                fprintf(fp1,"-");
+            }
+        }
         //qDebug()<< "in my DrawStars, x ,y is " << z<<" , "<<y<<endl;
         myDrawPoint(-0.2,y+0.5,z*2,0.02);
 
+    }
+    if( cnt_line <= 100 ){
+        fprintf(fp1,"\n");
+     }
+    cnt_line++;
+    if( cnt_line == 100 ){
+        fclose(fp1);
     }
 
 
