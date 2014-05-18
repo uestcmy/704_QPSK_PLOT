@@ -3,8 +3,7 @@
 #include <QApplication>
 
 #include <qpsk3.h>
-#include <ber.h>
-#include <biterrorrate.h>
+
 #include <GL/glut.h>
 
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
     w3.setGeometry(600,500,400,400);
     //w3.resize(600,450);
     w3.show();
-    w3.setWindowTitle("QPSK Star ( Port:7005)");
+    w3.setWindowTitle("QPSK Star 300-600 ( Port:7006)");
 
 
 

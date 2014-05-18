@@ -4,7 +4,7 @@
 #include <QGLWidget>
 #include <QKeyEvent>
 #include <GL/glut.h>
-
+#include  <stdio.h>
 namespace Ui {
 class QPSK3;
 }
@@ -21,7 +21,6 @@ public:
     double *pdata;
     void wallplot();
 
-
     void timerEvent(QTimerEvent *event);
     int id1;
     void InputManagement();
@@ -33,6 +32,7 @@ public:
     double char2double(char *str);
     double char2int(char *str);
     int ber();
+
 protected:
     void initializeGL();
     void resizeGL(int w, int h);
